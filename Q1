@@ -1,0 +1,94 @@
+#include <list>
+#include <unordered_map>
+#include <utility> 
+#include <iostream> 
+
+class LRUCache {
+private:
+    
+    std::list<std::pair<int, int>> dll;
+
+    std::unordered_map<int, std::list<std::pair<int, int>>::iterator> cache_map;
+
+    int capacity;
+
+    void moveToFront(std::list<std::pair<int, int>>::iterator it) {
+
+        std::pair<int, int> kv = *it;
+
+        dll.erase(it);
+ 
+        dll.push_front(kv);
+
+        cache_map[kv.first] = dll.begin();
+    }
+
+public:
+    LRUCache(int capacity) {
+        this->capacity = capacity;
+    }
+
+    int get(int key) {
+    
+        if (cache_map.find(key) == cache_map.end()) {
+            return -1; 
+        }
+
+       
+        auto it = cache_map[key];
+        int value = it->second;
+
+        moveToFront(it);
+
+        return value;
+    }
+
+    void put(int key, int value) {
+
+        if (cache_map.find(key) != cache_map.end()) {
+       
+            auto it = cache_map[key];
+            it->second = value; 
+            moveToFront(it);
+        } else {
+          
+            if (dll.size() == capacity) {
+            
+                int lru_key = dll.back().first; 
+                dll.pop_back();              
+                cache_map.erase(lru_key);  
+            }
+
+           
+            dll.push_front({key, value});
+
+            cache_map[key] = dll.begin();
+        }
+    }
+};
+
+
+int main() {
+    LRUCache lru(2); 
+
+    std::cout << "Putting (1, 1)" << std::endl;
+    lru.put(1, 1);
+    std::cout << "Putting (2, 2)" << std::endl;
+    lru.put(2, 2);
+
+    std::cout << "Getting 1: " << lru.get(1) << std::endl; 
+
+    std::cout << "Putting (3, 3)" << std::endl; 
+    lru.put(3, 3);
+
+    std::cout << "Getting 2: " << lru.get(2) << std::endl; 
+
+    std::cout << "Putting (4, 4)" << std::endl; 
+    lru.put(4, 4);
+
+    std::cout << "Getting 1: " << lru.get(1) << std::endl; 
+    std::cout << "Getting 3: " << lru.get(3) << std::endl; 
+    std::cout << "Getting 4: " << lru.get(4) << std::endl; 
+
+    return 0;
+}

@@ -1,0 +1,84 @@
+#include <vector>
+#include <list>
+#include <utility>
+#include <iostream> 
+
+class MyHashMap {
+private:
+    static const int NUM_BUCKETS = 20003; 
+
+    std::vector<std::list<std::pair<int, int>>> buckets;
+
+    int hash(int key) {
+        return key % NUM_BUCKETS;
+    }
+
+public:
+    MyHashMap() {
+        buckets.resize(NUM_BUCKETS);
+    }
+
+    void put(int key, int value) {
+        int bucket_index = hash(key);
+        std::list<std::pair<int, int>>& current_bucket = buckets[bucket_index];
+
+        for (auto& pair : current_bucket) {
+            if (pair.first == key) {
+                pair.second = value;
+                return;
+            }
+        }
+
+        current_bucket.push_front({key, value});
+    }
+
+    int get(int key) {
+        int bucket_index = hash(key);
+        const std::list<std::pair<int, int>>& current_bucket = buckets[bucket_index];
+
+        for (const auto& pair : current_bucket) {
+            if (pair.first == key) {
+                return pair.second;
+            }
+        }
+
+        return -1;
+    }
+
+    void remove(int key) {
+        int bucket_index = hash(key);
+        std::list<std::pair<int, int>>& current_bucket = buckets[bucket_index];
+
+        for (auto it = current_bucket.begin(); it != current_bucket.end(); ++it) {
+            if (it->first == key) {
+                current_bucket.erase(it);
+                return;
+            }
+        }
+    }
+};
+
+
+int main() {
+    MyHashMap obj;
+
+    std::cout << "Putting (1, 10)" << std::endl;
+    obj.put(1, 10);
+    std::cout << "Putting (2, 20)" << std::endl;
+    obj.put(2, 20);
+
+    std::cout << "Getting 1: " << obj.get(1) << std::endl; 
+    std::cout << "Getting 3: " << obj.get(3) << std::endl; 
+
+    std::cout << "Putting (2, 30)" << std::endl; 
+    obj.put(2, 30);
+
+    std::cout << "Getting 2: " << obj.get(2) << std::endl; 
+
+    std::cout << "Removing 2" << std::endl;
+    obj.remove(2);
+
+    std::cout << "Getting 2: " << obj.get(2) << std::endl; 
+
+    return 0;
+}
